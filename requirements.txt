@@ -2,6 +2,7 @@
 
 # data mining
 pandas
+sklearn
 
 # developping
 ipdb
