@@ -1,0 +1,7 @@
+# python3
+
+# data mining
+pandas
+
+# developping
+ipdb
