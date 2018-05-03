@@ -16,3 +16,10 @@ Uses python3
 ### models
 - CapaciteEmprunt and PrevisionnelAnnuel
   `$ python3 model.py`
+
+### evalutation
+`$ python3 eval.py`
+
+results : 
+    - Emprunt : *LassoLars*
+    - Prevision : *BayesianRidge*
