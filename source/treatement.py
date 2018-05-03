@@ -14,15 +14,12 @@ MISSING = "     "
 
 def missingValues(line, index, pool, nb_duplicated_lines=5):
     # until someone find something cleaner...
-    res = [line[0]]
-    tmp = line[-1]
-    line[-1] = line[-1] + "\n" + line[0]
-    line = line[1:]
+    res = []
+    line.append('\n')
     for i in range(nb_duplicated_lines):
-        line[index - 1] = pool[random.randrange(0, len(pool))]
+        line[index] = pool[random.randrange(0, len(pool))]
         res.extend(line)
-    res[-1] = tmp
-    return res
+    return res[:-1]
 
 
 def makePool(file, index):
@@ -59,7 +56,8 @@ for file in files:
             line = line.replace(',', '.')
             line = line.replace('[', '')
             line = line.replace(']', '')
-            line = line.replace(';;', ';0;')  # missing values
+            line = line.replace(';\n;', '\n')  # because of missing values
+            line = line.replace(';;', ';0;')  # missing zeros
             line = line.replace(';;', ';0;')
 
             output_file.write(line + "\n")
