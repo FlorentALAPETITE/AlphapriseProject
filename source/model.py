@@ -22,10 +22,9 @@ LINEAR_CLASSIFIERS = [
 ]
 
 
-def prediction(classifier, training_dataframe, test_dataframe, full_training_dataframe, class_index):
-    classe_prediction = full_training_dataframe.iloc[:, class_index]  
+def prediction(classifier, training_dataframe, test_dataframe, pred_class):
     classifier = classifier()  
-    classifier.fit(training_dataframe, classe_prediction)
+    classifier.fit(training_dataframe, pred_class)
     prediction = classifier.predict(test_dataframe)
 
     return prediction
@@ -35,8 +34,8 @@ def emprunt_previsionnel_prediction(full_training_dataframe, training_dataframe,
     for classifier in LINEAR_CLASSIFIERS:
         print("     ====== Mise en place du modèle avec le classifieur : "+ classifier.__name__ +" ======")
         filename = "../data/predicted_" + classifier.__name__ + ".csv"
-        pred_emprunt = prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe,5)
-        pred_previsionnel = prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe,6)
+        pred_emprunt = prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe.iloc[:, 5])
+        pred_previsionnel = prediction(classifier,training_dataframe,test_dataframe, full_training_dataframe.iloc[:, 6])
 
         output_file = open(filename, 'wt')
         output_writer = csv.writer(output_file)
@@ -158,5 +157,5 @@ def make_prediction():
     secteur_scoring_prediction(full_training_dataframe,training_dataframe, test)
 
 
-make_prediction()
-
+if __name__ == '__main__':
+    make_prediction()

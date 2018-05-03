@@ -9,10 +9,26 @@ import model
 
 FILENAME = "../data/cleaned_learning.csv"
 NB_REPETITION = 20  # validation repetee
-CLASS_INDEXES = {
+
+LINEAR_CLASS_INDEXES = {
     "emprunt": 5,
     "prevision": 6,
 }
+SCORING_CLASS_INDEXES = {
+    "secteur1": 1,
+    "secteur2": 2,
+    "secteurParticulier": 3,
+}
+METRIC = {
+    "LINEAR": {
+        'mse': sklearn.metrics.mean_squared_error,
+        'r2': sklearn.metrics.r2_score,
+    },
+    "SCORING": {
+        'matrix': sklearn.metrics.confusion_matrix
+    },
+}
+METRIC["NAMES"] = [k for k in METRIC["LINEAR"].keys()] + [k for k in METRIC["SCORING"].keys()]
 
 
 def cut_data(filename, percent_test=20):
@@ -45,50 +61,68 @@ def make_class(df_app_full, class_index):
 def make_prediction(df_app_full, df_test_full, df_app, df_test):
     pred = {}
     true = {}
-    for clss in model.CLASSIFIERS:
+
+    for col in LINEAR_CLASS_INDEXES:
+        true[col] = make_class(df_test_full, LINEAR_CLASS_INDEXES[col])
+    for col in SCORING_CLASS_INDEXES:
+        true[col] = make_class(df_test_full, SCORING_CLASS_INDEXES[col])
+
+    # model 1
+    for clss in model.LINEAR_CLASSIFIERS:
         pred[clss.__name__] = {}
-        pred[clss.__name__]["emprunt"] = model.prediction_emprunt(clss, df_app, df_test, df_app_full)
-        pred[clss.__name__]["prevision"] = model.prediction_previsionnel(clss, df_app, df_test, df_app_full)
-    true["emprunt"] = make_class(df_test, CLASS_INDEXES["emprunt"])
-    true["prevision"] = make_class(df_test, CLASS_INDEXES["prevision"])
+        for col in LINEAR_CLASS_INDEXES.keys():
+            pred[clss.__name__][col] = model.prediction(clss, df_app, df_test, make_class(df_app_full, LINEAR_CLASS_INDEXES[col]))
+
+    # model scoring
+    for clss in model.SCORING_CLASSIFIERS:
+        pred[clss.__name__] = {}
+        for col in SCORING_CLASS_INDEXES.keys():
+            pred[clss.__name__][col] = model.scoring_prediction(clss, df_app, df_test, df_app_full, SCORING_CLASS_INDEXES[col])
+
     return pred, true
 
 
 def give_precision(pred, true):
-    prec = {'mse' : {}, 'r2' : {}}
-    for clss in model.CLASSIFIERS:
-        prec['mse'][clss.__name__] = {}
-        prec['r2'][clss.__name__] = {}
-        for col in CLASS_INDEXES.keys():
-            prec['mse'][clss.__name__][col] = sklearn.metrics.mean_squared_error(true[col], pred[clss.__name__][col])
-            prec['r2'][clss.__name__][col] = sklearn.metrics.r2_score(true[col], pred[clss.__name__][col])
+    prec = {k: {} for k in METRIC["NAMES"]}
+
+    for metric, func in METRIC["LINEAR"].items():
+        prec[metric] = {}
+        for clss in model.LINEAR_CLASSIFIERS:
+            prec[metric][clss.__name__] = {}
+            for col in LINEAR_CLASS_INDEXES.keys():
+                prec[metric][clss.__name__][col] = func(true[col], pred[clss.__name__][col])
+
+    for metric, func in METRIC["SCORING"].items():
+        prec[metric] = {}
+        for clss in model.SCORING_CLASSIFIERS:
+            prec[metric][clss.__name__] = {}
+            for col in SCORING_CLASS_INDEXES.keys():
+                prec[metric][clss.__name__][col] = func(true[col], pred[clss.__name__][col])
+
     return prec
 
 
 def do_report(prec):
-    print(" -- Rapport de precision --")
-    print(" -- Validation repétée %s fois" % (NB_REPETITION, ))
-    print(" -- Avec MSE")
-    for col in CLASS_INDEXES.keys():
-        mini_mse = min([v[col] for k, v in prec['mse'].items()])  # min mse
-        mini_cls = [k for k, v in prec['mse'].items() if v[col] == mini_mse]
-        mini_cls = ", ".join(mini_cls)
-        print("    - %s : %s" % (col.capitalize(), mini_cls))
-    print(" -- Avec R²")
-    for col in CLASS_INDEXES.keys():
-        max_r2 = max([v[col] for k, v in prec['r2'].items()])  # max r2
-        mini_cls = [k for k, v in prec['r2'].items() if v[col] == max_r2]
-        mini_cls = ", ".join(mini_cls)
-        print("    - %s : %s" % (col.capitalize(), mini_cls))
+    print(" == Rapport de precision ==")
+    print(" == Validation repétée %s fois" % (NB_REPETITION, ))
+    print(" -- Modele 1 : CapaciteEmprunt et PrevisionnelAnnuel")
+    for metric in METRIC["LINEAR"].keys():
+        print(" -- Avec %s" % (metric.capitalize()))
+        for col in LINEAR_CLASS_INDEXES.keys():
+                vals = [v[col] for k, v in prec[metric].items()]
+                opti_val = min(vals) if metric == 'mse' else max(vals)  # min mse, max r2
+                opti_cls = [k for k, v in prec[metric].items() if v[col] == opti_val]
+                opti_cls = ", ".join(opti_cls)
+                print("    - %s : %s" % (col.capitalize(), opti_cls))
 
 
 def aggregate_iteration(big_prec):
     prec = {}
-    for metric in big_prec[0].keys():
+    for metric in METRIC["LINEAR"].keys():
         prec[metric] = {}
-        for clss in model.CLASSIFIERS:
+        for clss in model.LINEAR_CLASSIFIERS:
             prec[metric][clss.__name__] = {}
-            for col in CLASS_INDEXES.keys():
+            for col in LINEAR_CLASS_INDEXES.keys():
                 l = [p[metric][clss.__name__][col] for p in big_prec]
                 prec[metric][clss.__name__][col] = sum(l) / len(l)
     return prec
@@ -103,4 +137,5 @@ def eval():
         big_prec.append(give_precision(pred, true))
     do_report(aggregate_iteration(big_prec))
 
-eval()
+if __name__ == '__main__':
+    eval()
