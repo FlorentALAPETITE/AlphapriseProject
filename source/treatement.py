@@ -8,8 +8,8 @@ files = [
 ]
 
 
-ID = -2 # two parse of header
-MISSING =  "     "
+ID = -2  # two parse of header
+MISSING = "     "
 
 
 def missingValues(line, index, pool, nb_duplicated_lines=5):
@@ -19,7 +19,7 @@ def missingValues(line, index, pool, nb_duplicated_lines=5):
     line[-1] = line[-1] + "\n" + line[0]
     line = line[1:]
     for i in range(nb_duplicated_lines):
-        line[index-1] = pool[random.randrange(0, len(pool))]
+        line[index - 1] = pool[random.randrange(0, len(pool))]
         res.extend(line)
     res[-1] = tmp
     return res
@@ -56,8 +56,8 @@ for file in files:
             line = ";".join(line)
 
             # format
-            line = line.replace(',','.')
-            line = line.replace('[','')
-            line = line.replace(']','')
+            line = line.replace(',', '.')
+            line = line.replace('[', '')
+            line = line.replace(']', '')
 
-            output_file.write(line+"\n")
+            output_file.write(line + "\n")
