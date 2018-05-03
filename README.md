@@ -5,9 +5,14 @@ Uses python3
 ## dependancies
 `$ pip3 install -r requirements.txt`
 
-## pre treatment
+## lauch the project
+`./exec`
+
+## in details
+
+### pre treatment
 `$ python3 treatement.py`
 
-## models
+### models
 - CapaciteEmprunt and PrevisionnelAnnuel
   `$ python3 model.py`
