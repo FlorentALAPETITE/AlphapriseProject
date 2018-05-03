@@ -59,5 +59,7 @@ for file in files:
             line = line.replace(',', '.')
             line = line.replace('[', '')
             line = line.replace(']', '')
+            line = line.replace(';;', ';0;')  # missing values
+            line = line.replace(';;', ';0;')
 
             output_file.write(line + "\n")
