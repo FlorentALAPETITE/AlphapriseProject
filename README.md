@@ -22,4 +22,3 @@ Produce a folder named **prediction/** in the **data/** folder of the project. F
 
 ### Evaluation :
 `$ python3 eval.py`
-
