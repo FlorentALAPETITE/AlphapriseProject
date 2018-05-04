@@ -63,8 +63,7 @@ COL_SECT_PART = 36
 SCORING_CLASSIFIERS = [
     tree.DecisionTreeClassifier,
     KNeighborsClassifier,
-    SVC,
-    linear_model.LogisticRegression
+    SVC    
 ]
 
 
@@ -106,22 +105,26 @@ def scoring_prediction(classifier, training_dataframe, test_dataframe, full_trai
             classifier = classifier(n_neighbors=BEST_KNN_SECTEUR2)
         else:
             classifier = classifier(n_neighbors=BEST_KNN_SECTEUR_PARTI)
+    elif classifier == SVC:
+        classifier = classifier(probability=True)
     else :
         classifier = classifier()  
 
-    classifier.fit(training_dataframe, classe_scoring_prediction)
+    classifier.fit(training_dataframe, classe_scoring_prediction)    
+    #score = classifier.predict_proba(test_dataframe)
+    score=2
     prediction = classifier.predict(test_dataframe)
 
-    return prediction
+    return (prediction,score)
 
 
 def secteur_scoring_prediction(full_training_dataframe, training_dataframe, test_dataframe):
     for classifier in SCORING_CLASSIFIERS:
         print("     ====== Mise en place du modèle de scoring avec le classifieur : "+ classifier.__name__ +" ======")
         filename = "../data/predicted_" + classifier.__name__ + ".csv"
-        pred_scoring_secteur1 = scoring_prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe,1)
-        pred_scoring_secteur2 = scoring_prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe,2)
-        pred_scoring_secteur_parti = scoring_prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe,3)
+        (pred_scoring_secteur1,score_sect1) = scoring_prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe,1)
+        (pred_scoring_secteur2,score_sect2) = scoring_prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe,2)
+        (pred_scoring_secteur_parti,score_sect_parti) = scoring_prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe,3)
 
         output_file = open(filename, 'wt')
         output_writer = csv.writer(output_file)
