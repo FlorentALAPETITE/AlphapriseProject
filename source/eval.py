@@ -1,6 +1,7 @@
 import csv
 import random
 
+from matplotlib import pyplot
 import pandas
 import sklearn
 
@@ -81,9 +82,10 @@ def make_prediction(df_app_full, df_test_full, df_app, df_test):
     # model scoring
     for clss in model.SCORING_CLASSIFIERS:
         pred[clss.__name__] = {}
+        score[clss.__name__] = {}
         for col in SCORING_CLASS_INDEXES.keys():
             pred[clss.__name__][col], score_pred = model.scoring_prediction(clss, df_app, df_test, df_app_full, SCORING_CLASS_INDEXES[col])
-            score[col] = [pos for (neg, pos) in score_pred]
+            score[clss.__name__][col] = [pos for (neg, pos) in score_pred]
 
     return pred, true, score
 
@@ -106,7 +108,7 @@ def give_precision(pred, true, score):
                 if metric == "accuracy":
                     prec[metric][clss.__name__][col] = func(true[col], pred[clss.__name__][col])
                 elif metric == "ROC":
-                    prec[metric][clss.__name__][col] = func([int(cl) for cl in true[col]], score[col])
+                    prec[metric][clss.__name__][col] = func([int(cl) for cl in true[col]], score[clss.__name__][col])
                 else:
                     prec[metric][clss.__name__][col] = func(true[col], pred[clss.__name__][col], pos_label='1')
 
@@ -155,35 +157,51 @@ def aggregate_iteration(big_prec):
 
             for col in SCORING_CLASS_INDEXES.keys():
                 l = [p[metric][clss.__name__][col] for p in big_prec]
-                if metric == "matrix":
-                    # taux derreur
-                    tauxerreurs = [(mat[1][0] + mat[0][1])/(sum(mat[0]) + sum(mat[1])) for mat in l]
-                    prec["taux d'erreur"][clss.__name__][col] = sum(tauxerreurs) / len(tauxerreurs)
-                    # # rappel
-                    # recall = [(mat[1][1])/sum(mat[1]) for mat in l]
-                    # prec["rappel"][clss.__name__][col] = sum(recall) / len(recall)  ## OK -> recall
-                    # # precision
-                    # precision = [(mat[1][1])/(mat[1][1] + mat[0][1]) for mat in l]
-                    # prec["precision"][clss.__name__][col] = sum(precision) / len(precision) ## OK -> precision
-                    # # accuracy
-                    # accuracy = [(mat[0][0] + mat[1][1])/(sum(mat[0]) + sum(mat[1])) for mat in l]
-                    # prec["accuracy"][clss.__name__][col] = sum(accuracy) / len(accuracy)  # OK -> accuracy
-                    # # fmesure
-                    # fmesure = (2 * (prec["precision"][clss.__name__][col] * prec["rappel"][clss.__name__][col])) / (prec["precision"][clss.__name__][col] + prec["rappel"][clss.__name__][col])
-                    # prec["fmesure"][clss.__name__][col] = fmesure  ## OK F-mesure
-                else:
-                    prec[metric][clss.__name__][col] = sum(l) / len(l)
+                prec[metric][clss.__name__][col] = sum(l) / len(l)
     return prec
+
+
+def tracer_courbes_roc(big_true, big_score):
+    colors = ['red', 'green', 'blue']
+    curves = {v: {k.__name__ : ([], []) for k in model.SCORING_CLASSIFIERS} for v in SCORING_CLASS_INDEXES.keys()}
+    i = 1
+    for k in SCORING_CLASS_INDEXES.keys():
+        sub = pyplot.subplot(2, 2, i)
+        sub.set_title(k.capitalize())
+        # get the curve
+        for clss in model.SCORING_CLASSIFIERS:
+            fpr, tpr, thresholds = sklearn.metrics.roc_curve(big_true[k], big_score[clss.__name__][k], pos_label='1')
+            curves[k][clss.__name__] = (fpr, tpr)
+
+        # display
+        c = 0
+        for k, (fpr, tpr) in curves[k].items():
+            sub.plot(fpr, tpr, color=colors[c], label=k)
+            sub.legend()
+            c += 1
+        i += 1
+    pyplot.suptitle("Courbes ROC")
+    pyplot.legend()
+    pyplot.show()
+    return
 
 
 def eval():
     big_prec = []
+    big_score = {v.__name__: {k : [] for k in SCORING_CLASS_INDEXES.keys()} for v in model.SCORING_CLASSIFIERS}
+    big_true = {k: [] for k in SCORING_CLASS_INDEXES.keys()}
     for i in range(NB_REPETITION):
         app, test = cut_data(FILENAME)
         df_app_full, df_test_full, df_app, df_test = make_dataframes(app, test)
         pred, true, score = make_prediction(df_app_full, df_test_full, df_app, df_test)
         big_prec.append(give_precision(pred, true, score))
-    do_report(aggregate_iteration(big_prec))
+        for k in  SCORING_CLASS_INDEXES.keys():
+            big_true[k].extend(true[k])
+            for clss in model.SCORING_CLASSIFIERS:
+                big_score[clss.__name__][k].extend(score[clss.__name__][k])
+    prec = aggregate_iteration(big_prec)
+    do_report(prec)
+    tracer_courbes_roc(big_true, big_score)
 
 if __name__ == '__main__':
     eval()
