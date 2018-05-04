@@ -4,6 +4,7 @@ from sklearn import tree
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
+import os
 import csv
 
 
@@ -33,7 +34,13 @@ def prediction(classifier, training_dataframe, test_dataframe, pred_class):
 def emprunt_previsionnel_prediction(full_training_dataframe, training_dataframe, test_dataframe):
     for classifier in LINEAR_CLASSIFIERS:
         print("     ====== Mise en place du modèle avec le classifieur : "+ classifier.__name__ +" ======")
-        filename = "../data/predicted_" + classifier.__name__ + ".csv"
+
+        directory = "../data/prediction/"
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        filename = "../data/prediction/predicted_linear_" + classifier.__name__ + ".csv"
         pred_emprunt = prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe.iloc[:, 5])
         pred_previsionnel = prediction(classifier,training_dataframe,test_dataframe, full_training_dataframe.iloc[:, 6])
 
@@ -120,7 +127,14 @@ def scoring_prediction(classifier, training_dataframe, test_dataframe, full_trai
 def secteur_scoring_prediction(full_training_dataframe, training_dataframe, test_dataframe):
     for classifier in SCORING_CLASSIFIERS:
         print("     ====== Mise en place du modèle de scoring avec le classifieur : "+ classifier.__name__ +" ======")
-        filename = "../data/predicted_" + classifier.__name__ + ".csv"
+            
+        directory = "../data/prediction/"
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        filename = "../data/prediction/predicted_scoring_" + classifier.__name__ + ".csv"
+
         (pred_scoring_secteur1,score_sect1) = scoring_prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe,1)
         (pred_scoring_secteur2,score_sect2) = scoring_prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe,2)
         (pred_scoring_secteur_parti,score_sect_parti) = scoring_prediction(classifier,training_dataframe,test_dataframe,full_training_dataframe,3)
