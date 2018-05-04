@@ -111,8 +111,7 @@ def scoring_prediction(classifier, training_dataframe, test_dataframe, full_trai
         classifier = classifier()  
 
     classifier.fit(training_dataframe, classe_scoring_prediction)    
-    #score = classifier.predict_proba(test_dataframe)
-    score=2
+    score = classifier.predict_proba(test_dataframe)
     prediction = classifier.predict(test_dataframe)
 
     return (prediction,score)
