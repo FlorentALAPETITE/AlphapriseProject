@@ -28,27 +28,30 @@ def makePool(file, index):
 
 
 for file in files:
-    NbSalariesIndex = None
+    nbSalariesIndex = None
     with open("../data/" + file + ".csv", 'rt') as csvfile:
         input_file = csv.reader(csvfile, delimiter=';', quotechar='"')
         output_file = open("../data/cleaned_" + file + ".csv", 'wt')
 
+        # find NbSalaries index
+        header = next(csvfile)
+        nbSalariesIndex = header.split(';').index("NbSalaries")
+        nbSalariesPool = list(makePool(input_file, nbSalariesIndex))
+        csvfile.seek(0)
+
+        if file == "test":
+            nbSalariesIndex += 1  # bdecause we add an ID
+
         for line in input_file:
+
             # add id if not present
             if file == "test":
                 line.insert(0, "T" + str(ID) if ID >= 0 else "ID")
                 ID += 1
 
-            # find NbSalaries index
-            if input_file.line_num == 1:
-                NbSalariesIndex = line.index("NbSalaries")
-                NbSalariesPool = list(makePool(input_file, NbSalariesIndex))
-                csvfile.seek(0)
-                continue
-
             # take care of missing NbSalaries
-            if line[NbSalariesIndex] == MISSING:
-                line = missingValues(line, NbSalariesIndex, NbSalariesPool)
+            if line[nbSalariesIndex] == MISSING:
+                line = missingValues(line, nbSalariesIndex, nbSalariesPool)
 
             line = ";".join(line)
 
