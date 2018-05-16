@@ -1,7 +1,7 @@
 from model import *
 
 
-best_classifiers = { 'CapacitéEmprunt' : linear_model.LassoLars, 
+best_classifiers = { 'CapacitéEmprunt' : linear_model.BayesianRidge, 
                      'PrévisionnelAnnuel' : linear_model.BayesianRidge,
                      'Secteur1' : KNeighborsClassifier,
                      'Secteur2' : KNeighborsClassifier,
