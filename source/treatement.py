@@ -40,7 +40,7 @@ for file in files:
         csvfile.seek(0)
 
         if file == "test":
-            nbSalariesIndex += 1  # bdecause we add an ID
+            nbSalariesIndex += 1  # because we add an ID
 
         for line in input_file:
 
