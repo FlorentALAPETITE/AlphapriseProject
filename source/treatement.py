@@ -64,3 +64,9 @@ for file in files:
             line = line.replace(';;', ';0;')
 
             output_file.write(line + "\n")
+
+
+
+if __name__ == '__main__':   
+    from analyse_distribution import winsorize_learning_dataset
+    winsorize_learning_dataset()

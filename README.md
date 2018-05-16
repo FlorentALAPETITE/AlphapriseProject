@@ -13,6 +13,12 @@ Uses python3
 ### Pre-treatment of the data :
 `$ python3 treatement.py`
 
+### Analysis of the data distribution :
+`$ python3 analyse_distribution.py`
+
+Display the data distribution plot + the winsorized data distribution.
+
+
 ### Models and prediction : 
 `$ python3 model.py`
 

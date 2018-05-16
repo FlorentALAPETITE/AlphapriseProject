@@ -69,14 +69,16 @@ def plot_binary_distribution(full_dataset):
 
 
 def apply_winsorisation(full_dataset):
-	numeric_data = [sorted(full_dataset.iloc[:, EMPRUNT]),sorted(full_dataset.iloc[:, PREVISION])]
-	winorized_data = [winsorize(numeric_data[0],limits=(0,0.05)), winsorize(numeric_data[1],limits=(0,0.05))]	
+	numeric_data = [full_dataset.iloc[:, EMPRUNT],full_dataset.iloc[:, PREVISION]]
+	winsorized_data = [winsorize(numeric_data[0],limits=(0,0.01)), winsorize(numeric_data[1],limits=(0,0.01))]	
 
-	plot_normal_distribution(winorized_data)
+	return winsorized_data
 
 
 
 def plot_data_distribution():
+	import treatement
+
 	np.random.seed(1)
 	full_training_dataframe = pandas.read_csv("../data/cleaned_learning.csv", sep=";")
 
@@ -84,8 +86,25 @@ def plot_data_distribution():
 
 	plot_normal_distribution(numeric_data)
 	plot_binary_distribution(full_training_dataframe)
-	apply_winsorisation(full_training_dataframe)
+
+	wd = apply_winsorisation(full_training_dataframe)
+	plot_normal_distribution([sorted(x) for x in wd])
+
+	winsorize_learning_dataset()
 
 
-plot_data_distribution()
+def winsorize_learning_dataset():
+	full_training_dataframe = pandas.read_csv("../data/cleaned_learning.csv", sep=";")
+
+	numeric_data = [sorted(full_training_dataframe.iloc[:, EMPRUNT]),sorted(full_training_dataframe.iloc[:, PREVISION])]	
+	wd = apply_winsorisation(full_training_dataframe)
+
+	full_training_dataframe["CapaciteEmprunt"] = wd[0]
+	full_training_dataframe["PrevisionnelAnnuel"] = wd[1]
+
+	full_training_dataframe.to_csv("../data/cleaned_learning.csv", sep=";", index=False)
+
+
+if __name__=='__main__' :
+	plot_data_distribution()
 
