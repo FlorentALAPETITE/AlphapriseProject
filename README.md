@@ -19,7 +19,7 @@ Uses python3
 Display the data distribution plot + the winsorized data distribution.
 
 
-### Models and prediction : 
+### Models and preliminary predictions : 
 `$ python3 model.py`
 
 Produce a folder named **prediction/** in the **data/** folder of the project. Fill the folder with :
@@ -28,3 +28,9 @@ Produce a folder named **prediction/** in the **data/** folder of the project. F
 
 ### Evaluation :
 `$ python3 eval.py`
+
+
+### Final predictions :
+`$ python3 generate_prediction.py`
+
+Generate final predictions in **data/predictions.csv*.
